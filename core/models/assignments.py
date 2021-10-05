@@ -77,3 +77,21 @@ class Assignment(db.Model):
     @classmethod
     def get_assignments_by_student(cls, student_id):
         return cls.filter(cls.student_id == student_id).all()
+
+    @classmethod
+    def get_assignments_by_teacher(cls, teacher_id):
+        return cls.filter(cls.teacher_id == teacher_id).all()
+
+    @classmethod
+    def grade_assignment(cls, graded_assignment):
+        assignment = Assignment.get_by_id(graded_assignment.id)
+        print(graded_assignment.grade)
+        assertions.assert_found(assignment, 'No assignment with this id was found')
+        assertions.assert_auth(assignment.teacher_id == graded_assignment.teacher_id, 
+                                'This assignment belongs to some other teacher')
+
+        assignment.grade = GradeEnum(graded_assignment.grade)
+        assignment.state = AssignmentStateEnum.GRADED
+
+        db.session.flush()
+        return assignment
